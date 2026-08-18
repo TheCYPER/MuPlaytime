@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend guidance index; project conventions are placeholders, so implementation must establish and then follow actual patterns."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Database guidance index for Supabase migrations, functions, policies, and error behavior."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Own room, time, RPC, decoder, and Realtime contracts at explicit boundaries."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Centralize interval algebra, timezone conversion, name normalization, and status reducers."}
+{"file": ".trellis/tasks/08-15-mu-playtime-coordination-site/research/static-supabase-time-architecture.md", "reason": "Primary architecture research for Pages, Supabase, RLS, recurrence, options, and reminders."}
+{"file": ".trellis/tasks/08-15-mu-playtime-coordination-site/research/ux-time-loom-direction.md", "reason": "Visual tokens, responsive layout, signature shuttle, bilingual and accessibility direction."}
