@@ -30,6 +30,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
+      - run: npm test
       - run: npm run test:unit
       - run: npm run test:component
       - run: npm run test:db:static
