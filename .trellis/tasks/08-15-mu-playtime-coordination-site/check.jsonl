@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Check the final frontend against the project's documented conventions and quality expectations."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Check migrations, RLS, database functions, constraints, and error behavior."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Trace data across database, decoder, domain projection, Realtime, and UI boundaries."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Detect duplicated normalization, time, interval, and state-transition logic."}
+{"file": ".trellis/tasks/08-15-mu-playtime-coordination-site/research/static-supabase-time-architecture.md", "reason": "Verify implementation against researched security, time, Realtime, and deployment risks."}
+{"file": ".trellis/tasks/08-15-mu-playtime-coordination-site/research/ux-time-loom-direction.md", "reason": "Verify responsive visuals, bilingual layout, non-color cues, and shuttle accessibility."}
+{"file": ".trellis/tasks/08-15-mu-playtime-coordination-site/research/prd-convergence-audit.md", "reason": "Recheck previously identified acceptance and edge-case gaps."}
