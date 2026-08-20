@@ -41,6 +41,35 @@ export function roomHash(
   return base;
 }
 
+export function proposalHash(roomId: string, proposalId: string): string {
+  return `${roomHash(roomId, "proposals")}/${encodeURIComponent(proposalId)}`;
+}
+
+interface MuPlaytimeHistoryState {
+  muPlaytimeFromProposalList?: { roomId: string; proposalId: string };
+}
+
+export function pushProposalHash(roomId: string, proposalId: string): void {
+  const hash = proposalHash(roomId, proposalId);
+  const url = `${window.location.pathname}${window.location.search}${hash}`;
+  const state: MuPlaytimeHistoryState = {
+    muPlaytimeFromProposalList: { roomId, proposalId },
+  };
+  window.history.pushState(state, "", url);
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+}
+
+export function proposalWasOpenedFromList(
+  roomId: string,
+  proposalId: string,
+): boolean {
+  const state = window.history.state as MuPlaytimeHistoryState | null;
+  return (
+    state?.muPlaytimeFromProposalList?.roomId === roomId &&
+    state.muPlaytimeFromProposalList.proposalId === proposalId
+  );
+}
+
 export function replaceHash(hash: string): void {
   const url = `${window.location.pathname}${window.location.search}${hash}`;
   window.history.replaceState(null, "", url);

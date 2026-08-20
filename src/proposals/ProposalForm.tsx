@@ -37,12 +37,14 @@ export function ProposalForm({
   viewerTimeZone,
   onSubmit,
   onClose,
+  online = true,
 }: {
   mode: "proposal" | "option";
   defaultWindow?: ProposedWindow;
   viewerTimeZone: string;
   onSubmit: (gameName: string, option: ConcreteOptionInput) => Promise<void>;
   onClose?: () => void;
+  online?: boolean;
 }) {
   const { t } = useI18n();
   const initialZone = defaultWindow?.sourceTimeZone ?? viewerTimeZone;
@@ -77,6 +79,19 @@ export function ProposalForm({
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    if (!online) {
+      setError(t("writesOffline"));
+      return;
+    }
+    if (
+      !Number.isInteger(duration) ||
+      duration < 30 ||
+      duration > 1440 ||
+      duration % 30 !== 0
+    ) {
+      setError(t("selectionInvalid"));
+      return;
+    }
     const chosen =
       choices.length === 1
         ? choices[0]
@@ -121,6 +136,7 @@ export function ProposalForm({
       <label className="field">
         <span>{t("start")}</span>
         <input
+          data-dialog-initial-focus={mode === "option" ? true : undefined}
           required
           type="datetime-local"
           min="0001-01-01T00:00"
@@ -141,16 +157,22 @@ export function ProposalForm({
       />
       <label className="field">
         <span>{t("duration")}</span>
-        <select
+        <input
+          type="number"
+          min={30}
+          max={1440}
+          step={30}
+          list="proposal-duration-presets"
           value={duration}
           onChange={(event) => setDuration(Number(event.target.value))}
-        >
-          {[30, 60, 90, 120, 180, 240, 360].map((minutes) => (
+        />
+        <datalist id="proposal-duration-presets">
+          {[30, 60, 90, 120, 180, 240, 360, 720, 1440].map((minutes) => (
             <option value={minutes} key={minutes}>
               {minutes} {t("minutes")}
             </option>
           ))}
-        </select>
+        </datalist>
       </label>
       {choices.length > 1 && (
         <fieldset className="offset-choices">
@@ -195,7 +217,7 @@ export function ProposalForm({
       <button
         className="button button-primary"
         type="submit"
-        disabled={pending}
+        disabled={pending || !online}
       >
         {pending
           ? t("saving")

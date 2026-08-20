@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ConcreteOptionInput, RoomRepository } from "../data/repository";
@@ -12,20 +12,26 @@ import type {
   WatchId,
 } from "../domain/types";
 import { useI18n } from "../i18n/I18nProvider";
-import { GroupBoard, type ProposedWindow } from "../board/GroupBoard";
-import { ProposalForm } from "../proposals/ProposalForm";
+import { GroupBoard } from "../board/GroupBoard";
 import { ProposalPanel } from "../proposals/ProposalPanel";
 import { subscribeToRoomChanges } from "../realtime/roomRealtime";
 import { ScheduleEditor } from "../schedule/ScheduleEditor";
 import { LiveStatus } from "../ui/LiveStatus";
-import { useDialogFocus } from "../ui/useDialogFocus";
-import { InviteSheet } from "./InviteSheet";
+import { useVisualViewport } from "../ui/useVisualViewport";
+import { RoomSheetHost, type TransientRoomSheet } from "./RoomSheetHost";
+import { RoomStatusRegion } from "./RoomStatusRegion";
 import { Shell } from "./Shell";
 import { writePreferences } from "./preferences";
+import { proposalWasOpenedFromList, replaceHash, roomHash } from "./router";
+import {
+  executeRoomMutation,
+  ROOM_MUTATION_NETWORK_MODE,
+} from "./roomMutation";
 
 export function RoomPage({
   roomId,
   view,
+  proposalId,
   repository,
   supabase,
   viewerTimeZone,
@@ -34,6 +40,7 @@ export function RoomPage({
 }: {
   roomId: RoomId;
   view: "group" | "schedule" | "proposals";
+  proposalId?: string;
   repository: RoomRepository;
   supabase: SupabaseClient;
   viewerTimeZone: string;
@@ -42,42 +49,33 @@ export function RoomPage({
 }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
-  const [inviteRequested, setInviteRequested] = useState(false);
-  const [dismissedInviteToken, setDismissedInviteToken] = useState<
-    string | null
-  >(null);
-  const [proposalDraft, setProposalDraft] = useState<{
-    defaultWindow?: ProposedWindow;
-  } | null>(null);
+  const [transientSheet, setTransientSheet] =
+    useState<TransientRoomSheet>(null);
+  const openedInviteTokenRef = useRef<string | null>(null);
+  const closedProposalRef = useRef<string | null>(null);
   const [online, setOnline] = useState(navigator.onLine);
-  const inviteOpen =
-    inviteRequested ||
-    (inviteToken !== null && dismissedInviteToken !== inviteToken);
-  const closeInvite = () => {
-    setInviteRequested(false);
-    if (inviteToken) setDismissedInviteToken(inviteToken);
-  };
-  const proposalDialogRef = useDialogFocus<HTMLElement>(
-    proposalDraft !== null,
-    () => setProposalDraft(null),
-  );
+  useVisualViewport();
   const query = useQuery({
     queryKey: roomKeys.snapshot(roomId),
     queryFn: () => repository.snapshot(roomId),
     retry: 1,
   });
   const mutation = useMutation({
-    mutationFn: (operation: () => Promise<unknown>) => operation(),
+    mutationFn: executeRoomMutation,
+    networkMode: ROOM_MUTATION_NETWORK_MODE,
     onSettled: () => invalidateRoom(queryClient, roomId),
   });
-
   useEffect(
     () => subscribeToRoomChanges(supabase, queryClient, roomId),
     [supabase, queryClient, roomId],
   );
   useEffect(() => {
-    const onOnline = () => setOnline(true);
-    const onOffline = () => setOnline(false);
+    const onOnline = () => {
+      setOnline(true);
+    };
+    const onOffline = () => {
+      setOnline(false);
+    };
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     return () => {
@@ -85,6 +83,31 @@ export function RoomPage({
       window.removeEventListener("offline", onOffline);
     };
   }, []);
+  useEffect(() => {
+    if (
+      inviteToken &&
+      openedInviteTokenRef.current !== inviteToken &&
+      transientSheet === null
+    ) {
+      openedInviteTokenRef.current = inviteToken;
+      setTransientSheet({ kind: "invite" });
+    }
+  }, [inviteToken, transientSheet]);
+  useEffect(() => {
+    if (proposalId || !closedProposalRef.current) return;
+    const closedId = closedProposalRef.current;
+    closedProposalRef.current = null;
+    requestAnimationFrame(() => {
+      const summary = document
+        .getElementById(`proposal-${closedId}`)
+        ?.querySelector("a");
+      const target =
+        summary && !summary.closest("[hidden]")
+          ? summary
+          : document.getElementById("proposals-heading");
+      if (target instanceof HTMLElement) target.focus();
+    });
+  }, [proposalId]);
   useEffect(() => {
     if (query.data) {
       writePreferences({
@@ -96,11 +119,15 @@ export function RoomPage({
     }
   }, [query.data, viewerTimeZone, view]);
 
-  const run = useMemo(
-    () => async (operation: () => Promise<unknown>) => {
-      await mutation.mutateAsync(operation);
+  const mutateAsync = mutation.mutateAsync;
+  const run = useCallback(
+    async (operation: () => Promise<unknown>) => {
+      await mutateAsync({
+        operation,
+        onlineAtSubmit: navigator.onLine,
+      });
     },
-    [mutation],
+    [mutateAsync],
   );
 
   if (query.isPending)
@@ -110,7 +137,7 @@ export function RoomPage({
         <p>{t("loading")}</p>
       </main>
     );
-  if (query.isError || !query.data)
+  if (!query.data)
     return (
       <main className="state-page">
         <h1>{t("serviceError")}</h1>
@@ -150,17 +177,15 @@ export function RoomPage({
       view={view}
       viewerTimeZone={viewerTimeZone}
       onViewerTimeZone={onViewerTimeZone}
-      onInvite={() => setInviteRequested(true)}
+      onInvite={() => setTransientSheet({ kind: "invite" })}
+      onMore={() => setTransientSheet({ kind: "room-actions" })}
     >
-      {!online && <div className="connection-banner">{t("offline")}</div>}
-      {mutation.isPending && (
-        <div className="connection-banner saving">{t("saving")}</div>
-      )}
-      {mutation.isError && !mutation.isPending && (
-        <div className="connection-banner" role="alert">
-          {t("serviceError")}
-        </div>
-      )}
+      <RoomStatusRegion
+        online={online}
+        checking={online && query.isFetching && !query.isPending}
+        error={query.isError}
+        onRetry={() => void query.refetch()}
+      />
       <LiveStatus
         message={
           mutation.isPending
@@ -174,7 +199,18 @@ export function RoomPage({
         <GroupBoard
           snapshot={snapshot}
           viewerTimeZone={viewerTimeZone}
-          onPropose={(defaultWindow) => setProposalDraft({ defaultWindow })}
+          onPropose={(defaultWindow) =>
+            setTransientSheet({
+              kind: "proposal-form",
+              context: { mode: "proposal", defaultWindow },
+            })
+          }
+          onViewDetails={(context) =>
+            setTransientSheet({ kind: "selection-detail", context })
+          }
+          onChooseDayTime={(context) =>
+            setTransientSheet({ kind: "board-time-choice", context })
+          }
         />
       )}
       {view === "schedule" && (
@@ -182,7 +218,19 @@ export function RoomPage({
           snapshot={snapshot}
           viewerTimeZone={viewerTimeZone}
           onViewerTimeZone={onViewerTimeZone}
-          onCreateProposal={() => setProposalDraft({})}
+          onCreateProposal={() =>
+            setTransientSheet({
+              kind: "proposal-form",
+              context: { mode: "proposal" },
+            })
+          }
+          onOpenInterval={(context) =>
+            setTransientSheet({ kind: "schedule-interval", context })
+          }
+          onOpenTimezone={(context) =>
+            setTransientSheet({ kind: "timezone-change", context })
+          }
+          online={online}
           onReplaceWeekly={(
             isoWeekday: number,
             intervals: ScheduleInterval[],
@@ -268,49 +316,50 @@ export function RoomPage({
           snapshot={snapshot}
           viewerTimeZone={viewerTimeZone}
           actions={proposalActions}
-          onCreateProposal={() => setProposalDraft({})}
+          selectedProposalId={proposalId}
+          onCreateProposal={() =>
+            setTransientSheet({
+              kind: "proposal-form",
+              context: { mode: "proposal" },
+            })
+          }
+          onSuggestTime={(targetProposalId) =>
+            setTransientSheet({
+              kind: "proposal-form",
+              context: { mode: "option", proposalId: targetProposalId },
+            })
+          }
+          online={online}
         />
       )}
-      {proposalDraft && (
-        <div
-          className="sheet-backdrop"
-          role="presentation"
-          onMouseDown={() => setProposalDraft(null)}
-        >
-          <section
-            ref={proposalDialogRef}
-            className="sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="proposal-title"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="sheet-heading">
-              <h2 id="proposal-title">{t("planGame")}</h2>
-              <button
-                className="icon-button"
-                type="button"
-                aria-label={t("close")}
-                onClick={() => setProposalDraft(null)}
-              >
-                ×
-              </button>
-            </div>
-            <ProposalForm
-              mode="proposal"
-              defaultWindow={proposalDraft.defaultWindow}
-              viewerTimeZone={viewerTimeZone}
-              onClose={() => setProposalDraft(null)}
-              onSubmit={async (gameName, option) => {
-                await run(() =>
-                  repository.createProposal(roomId, gameName, option),
-                );
-              }}
-            />
-          </section>
-        </div>
-      )}
-      {inviteOpen && <InviteSheet token={inviteToken} onClose={closeInvite} />}
+      <RoomSheetHost
+        snapshot={snapshot}
+        viewerTimeZone={viewerTimeZone}
+        inviteToken={inviteToken}
+        sheet={transientSheet}
+        onViewerTimeZone={onViewerTimeZone}
+        onClose={() => setTransientSheet(null)}
+        onReplace={setTransientSheet}
+        onCreateProposal={(gameName, option) =>
+          run(() => repository.createProposal(roomId, gameName, option))
+        }
+        onAddOption={(targetProposalId, option) =>
+          run(() => repository.addOption(roomId, targetProposalId, option))
+        }
+        online={online}
+        checking={online && query.isFetching && !query.isPending}
+        statusError={query.isError}
+        onRetryStatus={() => void query.refetch()}
+        routeProposalId={proposalId}
+        proposalActions={proposalActions}
+        onCloseProposal={() => {
+          if (!proposalId) return;
+          closedProposalRef.current = proposalId;
+          if (proposalWasOpenedFromList(roomId, proposalId))
+            window.history.back();
+          else replaceHash(roomHash(roomId, "proposals"));
+        }}
+      />
     </Shell>
   );
 }

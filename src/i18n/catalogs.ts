@@ -47,6 +47,8 @@ export const en = {
     "Final times are immutable. Create a new proposal to reschedule.",
   noProposals:
     "No active proposals yet. Select any window—even one with zero marked free—to start.",
+  noActiveProposals:
+    "No active proposals right now. You can start a new plan or open History below.",
   open: "Open",
   scheduled: "Scheduled",
   cancelled: "Cancelled",
@@ -79,6 +81,7 @@ export const en = {
   keepAnchor: "Keep schedule anchor; only change my view",
   migrateSchedule: "Migrate schedule and preserve local clock times",
   previewOnly: "Preview only—nothing changes until you confirm.",
+  applyViewerZone: "Change my view",
   confirmMigration: "Confirm migration",
   day: "Day",
   previousDay: "Previous day",
@@ -94,7 +97,7 @@ export const en = {
   configBody:
     "Add the public Supabase URL and publishable key, then rebuild. No privileged key belongs in this app.",
   schemaMismatch: "The app and database schema versions do not match.",
-  invalidInvite: "This invite is invalid or the service is unavailable.",
+  invalidInvite: "This invite is invalid.",
   invalidName: "Enter a non-empty name.",
   invalidTime: "Choose an end later than the start.",
   scheduleConflict:
@@ -128,6 +131,79 @@ export const en = {
     "This civil date has no real instants in the selected timezone. Choose another day.",
   endsNextDay: "End is on the next day",
   quickPaint: "30-minute quick paint (pointer, touch, or keyboard)",
+  more: "More",
+  youAre: "You are",
+  viewOnlyZone: "Changes only how times are shown to you.",
+  shareInvite: "Share invite",
+  shareFailed: "Sharing was unavailable. You can still copy the link.",
+  inviteUnavailable:
+    "This secret link was intentionally kept only in this tab and is no longer available after a refresh. Use a copy you saved earlier.",
+  viewDetails: "View details",
+  selectionInvalid:
+    "Choose a range from 30 minutes to 24 hours in 30-minute steps.",
+  selectionDraftResetForZone:
+    "Your unresolved time edit was reset when the viewing timezone changed. The selected UTC window was preserved.",
+  timezoneSection: "Timezone",
+  addTime: "Add time",
+  edit: "Edit",
+  editTime: "Edit schedule time",
+  clearTime: "Clear this time",
+  confirmClear: "Clear schedule",
+  clearWarning:
+    "Only this saved time will be cleared; nearby times stay unchanged.",
+  usingTemplate: "Using the weekly template",
+  usingOverride: "This date has its own schedule",
+  previousBlock: "Previous 4 hours",
+  nextBlock: "Next 4 hours",
+  saveChanges: "Save changes",
+  cancel: "Cancel",
+  clear: "Clear",
+  brush: "Brush",
+  reviewTimezone: "Review timezone change",
+  currentSchedule: "Current saved schedule",
+  attention: "Attention",
+  history: "History",
+  showHistory: "Show History",
+  hideHistory: "Hide History",
+  options: "options",
+  respondedProgress: "Responded to {done} of {total} options",
+  remindersWatching: "reminders watching",
+  proposalNotFound: "This proposal is no longer available.",
+  returnToList: "Return to proposals",
+  proposalActions: "Proposal actions",
+  actionFailed: "That action was not saved. Review it and try again.",
+  reminderManualAccept:
+    "This reminder only calls your attention; it never accepts for you.",
+  crossTimezoneCoop: "Cross-timezone co-op",
+  checkingSharedData: "Checking the latest shared room data…",
+  writesOffline: "Reconnect before saving. Your draft stays on this device.",
+  details: "Details",
+  currentRoom: "Current room",
+  publicConfigOnly: "Public browser configuration",
+  reviewAndRetry: "Review and retry with latest version",
+  intervalChanged:
+    "This saved interval changed or disappeared. Close this sheet, select the current interval, and confirm a new edit.",
+  quickPaintBaseChanged:
+    "The saved day changed while this draft was open. Review the latest day and the rebased draft before saving.",
+  rangeDraftBaseChanged:
+    "The saved day changed while this range was being edited. Review the latest schedule and intended result before saving.",
+  reviewRebasedDraft: "Use this reviewed rebased draft",
+  confirmAction: "Confirm action",
+  confirmFinalWarning:
+    "This makes the selected time final. It cannot be edited; rescheduling requires a new proposal.",
+  withdrawOptionWarning:
+    "Withdraw this suggested time? Existing responses stay in history and this option cannot be restored.",
+  cancelProposalWarning:
+    "Cancel this proposal? Existing responses and reminders will close, and the proposal cannot be reopened.",
+  restoreTemplateWarning:
+    "Remove this date exception and return to the weekly template?",
+  adjacentSegment: "Adjacent saved segment",
+  editSelectedOnly: "Edit only the selected segment",
+  alsoEditPreviousSegment: "Also edit the touching previous-day segment",
+  alsoEditNextSegment: "Also edit the touching next-day segment",
+  adjustInTwoEdits:
+    "This would affect three days. Adjust the previous segment in a separate edit.",
+  affectedDaysPreview: "Affected-day preview",
 } as const;
 
 export type MessageKey = keyof typeof en;
@@ -177,6 +253,8 @@ export const zhCN: Record<MessageKey, string> = {
   cancelProposal: "取消提议",
   rescheduleHint: "最终时间不能修改；如需改期，请创建新提议。",
   noProposals: "还没有进行中的提议。任何时间都能发起，即使目前零人标为空闲。",
+  noActiveProposals:
+    "目前没有进行中的提议；你可以新建提议，或查看下方历史记录。",
   open: "征集中",
   scheduled: "已确认",
   cancelled: "已取消",
@@ -207,6 +285,7 @@ export const zhCN: Record<MessageKey, string> = {
   keepAnchor: "保留排期锚点，只改变我的查看方式",
   migrateSchedule: "迁移排期，并保留本地星期、日期和钟点",
   previewOnly: "目前只是预览；确认前不会写入。",
+  applyViewerZone: "更改我的查看时区",
   confirmMigration: "确认迁移",
   day: "日期",
   previousDay: "前一天",
@@ -222,7 +301,7 @@ export const zhCN: Record<MessageKey, string> = {
   configBody:
     "请加入公开的 Supabase URL 与 publishable key 后重新构建；应用中不能放特权密钥。",
   schemaMismatch: "应用与数据库结构版本不一致。",
-  invalidInvite: "邀请无效，或共享服务暂时不可用。",
+  invalidInvite: "这个邀请无效。",
   invalidName: "请输入非空名字。",
   invalidTime: "结束时间必须晚于开始时间。",
   scheduleConflict:
@@ -254,6 +333,74 @@ export const zhCN: Record<MessageKey, string> = {
   skippedCivilDay: "所选时区中这个民用日期没有任何真实时刻，请选择其他日期。",
   endsNextDay: "结束时间在次日",
   quickPaint: "30 分钟快速涂抹（支持指针、触控与键盘）",
+  more: "更多",
+  youAre: "当前身份",
+  viewOnlyZone: "只会改变你看到的时间显示。",
+  shareInvite: "分享邀请",
+  shareFailed: "暂时无法调用分享功能；仍可复制链接。",
+  inviteUnavailable:
+    "秘密邀请链接只保留在当前标签页中，刷新后不会继续保存。请使用你之前保存的副本。",
+  viewDetails: "查看详情",
+  selectionInvalid: "请选择 30 分钟到 24 小时、且以 30 分钟为步长的时间段。",
+  selectionDraftResetForZone:
+    "查看时区变化后，尚未确认的时间修改已重置；原有 UTC 时间段仍然保留。",
+  timezoneSection: "时区",
+  addTime: "添加时间",
+  edit: "修改",
+  editTime: "修改排期时间",
+  clearTime: "清除这段排期",
+  confirmClear: "确认清除排期",
+  clearWarning: "只会清除这段已保存时间；相邻时间不会改变。",
+  usingTemplate: "目前沿用每周模板",
+  usingOverride: "这个日期有独立排期",
+  previousBlock: "前 4 小时",
+  nextBlock: "后 4 小时",
+  saveChanges: "保存修改",
+  cancel: "取消",
+  clear: "清除",
+  brush: "画笔",
+  reviewTimezone: "查看时区变更",
+  currentSchedule: "当前保存的排期",
+  attention: "需要留意",
+  history: "历史记录",
+  showHistory: "展开历史记录",
+  hideHistory: "收起历史记录",
+  options: "个时间选项",
+  respondedProgress: "已回应 {total} 个选项中的 {done} 个",
+  remindersWatching: "个提醒观察中",
+  proposalNotFound: "这个提议已不存在。",
+  returnToList: "返回提议列表",
+  proposalActions: "提议操作",
+  actionFailed: "该操作没有保存；请核对后重试。",
+  reminderManualAccept: "提醒只会叫你来看，不会替你自动接受。",
+  crossTimezoneCoop: "跨时区一起玩",
+  checkingSharedData: "正在核对最新的共享房间数据…",
+  writesOffline: "请先恢复连接再保存；当前草稿会留在这台设备上。",
+  details: "详情",
+  currentRoom: "当前房间",
+  publicConfigOnly: "浏览器公开配置",
+  reviewAndRetry: "核对后用最新版重试",
+  intervalChanged:
+    "这段已保存排期已经变化或消失；请关闭后重新选择当前排期，再确认修改。",
+  quickPaintBaseChanged:
+    "这份草稿打开期间，已保存排期发生了变化。保存前请查看最新排期和重新套用后的草稿。",
+  rangeDraftBaseChanged:
+    "编辑这个时段期间，已保存的当天排期发生了变化。保存前请查看最新排期和预期结果。",
+  reviewRebasedDraft: "使用已查看的重新套用草稿",
+  confirmAction: "确认操作",
+  confirmFinalWarning:
+    "这会把所选时间设为最终时间，之后不能修改；如需改期必须新建提议。",
+  withdrawOptionWarning:
+    "撤回这个建议时间吗？已有回应会保留在历史中，且该选项不能恢复。",
+  cancelProposalWarning:
+    "取消这个提议吗？已有回应和提醒会结束，且提议不能重新开启。",
+  restoreTemplateWarning: "移除这个日期例外并恢复为每周模板吗？",
+  adjacentSegment: "相邻的已保存时间段",
+  editSelectedOnly: "只修改当前选中的时间段",
+  alsoEditPreviousSegment: "同时修改相连的前一日时间段",
+  alsoEditNextSegment: "同时修改相连的后一日时间段",
+  adjustInTwoEdits: "这会影响三天；请把前一日时间段另行修改。",
+  affectedDaysPreview: "受影响日期预览",
 };
 
 export const catalogs = { en, "zh-CN": zhCN } as const;
