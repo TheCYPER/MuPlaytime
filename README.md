@@ -61,6 +61,8 @@ npm run test:component
 npm run test:db:static
 npm run test:e2e
 npm run test:browser
+npm run test:browser:mobile
+npm run test:browser:desktop
 npm run test:e2e:live
 npm run test:e2e:live:mobile
 npm run build
@@ -125,4 +127,10 @@ the first deployment:
 5. Run the two-client public smoke flow before adding the personal-site project card.
 
 See the approved product and architecture artifacts under
-`.trellis/tasks/08-15-mu-playtime-coordination-site/` for the full contracts.
+`.trellis/tasks/archive/2026-08/08-15-mu-playtime-coordination-site/` and the
+mobile experience artifacts under
+`.trellis/tasks/archive/2026-08/08-19-mobile-experience-optimization/` for the
+full contracts. Release history is in [CHANGELOG.md](CHANGELOG.md), licensing
+status is in [LICENSE-NOTICE.md](LICENSE-NOTICE.md), and the contributor/agent
+workflow is documented in [AGENTS.md](AGENTS.md) and
+[.trellis/workflow.md](.trellis/workflow.md).
