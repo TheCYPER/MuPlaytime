@@ -758,6 +758,11 @@ export function GroupBoard({
               className="overlap-hit-layer"
               type="button"
               aria-label={t("viewDetails")}
+              onClick={(event) => {
+                if (event.detail === 0 && !handoffBlocked) {
+                  onViewDetails({ range: selection, viewerTimeZone });
+                }
+              }}
               onPointerDown={(event) => {
                 tapRef.current = { x: event.clientX, y: event.clientY };
               }}

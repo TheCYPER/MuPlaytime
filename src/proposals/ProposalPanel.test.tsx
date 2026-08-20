@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MemberId, RoomId, RoomSnapshot } from "../domain/types";
 import { I18nProvider } from "../i18n/I18nProvider";
@@ -289,5 +289,60 @@ describe("ProposalPanel", () => {
     const scheduleLine = summary.querySelector("small");
     expect(scheduleLine).not.toHaveTextContent(/2 options/);
     expect(scheduleLine).not.toHaveTextContent(/2 accepted/);
+  });
+
+  it("serializes response and reminder writes per option", async () => {
+    const snapshot = roomSnapshotFixture();
+    const actions = proposalActions();
+    let finishResponse!: () => void;
+    let finishWatch!: () => void;
+    actions.respond.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishResponse = resolve;
+        }),
+    );
+    actions.setWatch.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishWatch = resolve;
+        }),
+    );
+
+    render(
+      <I18nProvider>
+        <ProposalPanel
+          snapshot={snapshot}
+          viewerTimeZone="UTC"
+          actions={actions}
+          onCreateProposal={vi.fn()}
+          onSuggestTime={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    const accept = screen.getByRole("button", { name: /^Accept/ });
+    const maybe = screen.getByRole("button", { name: /^Maybe/ });
+    const decline = screen.getByRole("button", { name: /^Decline/ });
+    fireEvent.click(maybe);
+    expect(accept).toBeDisabled();
+    expect(maybe).toBeDisabled();
+    expect(decline).toBeDisabled();
+    fireEvent.click(decline);
+    expect(actions.respond).toHaveBeenCalledOnce();
+    await act(() => {
+      finishResponse();
+      return Promise.resolve();
+    });
+
+    const setReminder = screen.getByRole("button", { name: "Set reminder" });
+    fireEvent.click(setReminder);
+    expect(setReminder).toBeDisabled();
+    fireEvent.click(setReminder);
+    expect(actions.setWatch).toHaveBeenCalledOnce();
+    await act(() => {
+      finishWatch();
+      return Promise.resolve();
+    });
   });
 });

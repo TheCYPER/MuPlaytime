@@ -7,6 +7,7 @@ import { GroupBoard, type ProposedWindow } from "./GroupBoard";
 function board(
   viewerTimeZone: string,
   onPropose: (value: ProposedWindow) => void,
+  onViewDetails = vi.fn(),
 ) {
   return (
     <I18nProvider>
@@ -14,7 +15,7 @@ function board(
         snapshot={roomSnapshotFixture()}
         viewerTimeZone={viewerTimeZone}
         onPropose={onPropose}
-        onViewDetails={vi.fn()}
+        onViewDetails={onViewDetails}
         onChooseDayTime={vi.fn()}
       />
     </I18nProvider>
@@ -60,5 +61,20 @@ describe("GroupBoard absolute selection", () => {
       endEpochMilliseconds: proposed[0]?.endEpochMilliseconds,
       sourceTimeZone: "Asia/Shanghai",
     });
+  });
+
+  it("opens the current selection when the overlap rail is keyboard-activated", () => {
+    const onViewDetails = vi.fn();
+    render(board("Asia/Shanghai", vi.fn(), onViewDetails));
+
+    const [overlapRail] = screen.getAllByRole("button", {
+      name: "View details",
+    });
+    fireEvent.click(overlapRail!, { detail: 0 });
+
+    expect(onViewDetails).toHaveBeenCalledOnce();
+    expect(onViewDetails).toHaveBeenCalledWith(
+      expect.objectContaining({ viewerTimeZone: "Asia/Shanghai" }),
+    );
   });
 });

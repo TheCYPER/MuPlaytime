@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import type { ConcreteOptionInput } from "../data/repository";
 import type {
   OptionId,
@@ -80,6 +80,7 @@ export function ProposalOptionList({
   const [actionState, setActionState] = useState<
     Record<string, { pending: boolean; error: string | null }>
   >({});
+  const pendingKeysRef = useRef(new Set<string>());
   async function perform(
     key: string,
     action: () => Promise<void>,
@@ -91,6 +92,8 @@ export function ProposalOptionList({
       }));
       return false;
     }
+    if (pendingKeysRef.current.has(key)) return false;
+    pendingKeysRef.current.add(key);
     setActionState((current) => ({
       ...current,
       [key]: { pending: true, error: null },
@@ -108,6 +111,8 @@ export function ProposalOptionList({
         [key]: { pending: false, error: t("actionFailed") },
       }));
       return false;
+    } finally {
+      pendingKeysRef.current.delete(key);
     }
   }
   return (
@@ -153,6 +158,8 @@ export function ProposalOptionList({
                 ? t("watchProposalCancelled")
                 : "";
         const isFinal = proposal.confirmedOptionId === option.id;
+        const responseKey = `respond:${option.id}`;
+        const watchKey = `watch:${option.id}`;
         const optionError = Object.entries(actionState).find(
           ([key, value]) => key.endsWith(`:${option.id}`) && value.error,
         )?.[1].error;
@@ -194,14 +201,12 @@ export function ProposalOptionList({
                 <button
                   className={own === choice ? "selected" : undefined}
                   disabled={
-                    !online ||
-                    !eligible ||
-                    actionState[`respond-${choice}:${option.id}`]?.pending
+                    !online || !eligible || actionState[responseKey]?.pending
                   }
                   type="button"
                   key={choice}
                   onClick={() =>
-                    void perform(`respond-${choice}:${option.id}`, () =>
+                    void perform(responseKey, () =>
                       actions.respond(option.id, choice),
                     )
                   }
@@ -213,10 +218,12 @@ export function ProposalOptionList({
               {own && (
                 <button
                   className="clear-response"
-                  disabled={!online || !eligible}
+                  disabled={
+                    !online || !eligible || actionState[responseKey]?.pending
+                  }
                   type="button"
                   onClick={() =>
-                    void perform(`withdraw-response:${option.id}`, () =>
+                    void perform(responseKey, () =>
                       actions.respond(option.id, null),
                     )
                   }
@@ -265,9 +272,13 @@ export function ProposalOptionList({
                         <button
                           className="button button-secondary"
                           type="button"
-                          disabled={!online || !thresholdValid}
+                          disabled={
+                            !online ||
+                            !thresholdValid ||
+                            actionState[watchKey]?.pending
+                          }
                           onClick={() =>
-                            void perform(`watch:${option.id}`, () =>
+                            void perform(watchKey, () =>
                               actions.setWatch(option.id, threshold),
                             )
                           }
@@ -293,9 +304,13 @@ export function ProposalOptionList({
                     <button
                       className="button button-secondary"
                       type="button"
-                      disabled={!online || !thresholdValid}
+                      disabled={
+                        !online ||
+                        !thresholdValid ||
+                        actionState[watchKey]?.pending
+                      }
                       onClick={() =>
-                        void perform(`watch:${option.id}`, () =>
+                        void perform(watchKey, () =>
                           actions.setWatch(option.id, threshold),
                         )
                       }
