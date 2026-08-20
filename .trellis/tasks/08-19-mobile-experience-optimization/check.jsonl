@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/data-time-contracts.md", "reason": "Verify mobile refactors preserve absolute instants, wall-time schedules, DST handling, persistence, and repository boundaries."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Verify runner discovery, aggregate Vitest, browser suites, and Pages CI gates remain correct."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Check that shared sheet, interval editing, selection, status, and proposal actions have single owners rather than copied logic."}
+{"file": ".trellis/tasks/08-19-mobile-experience-optimization/research/current-mobile-audit.md", "reason": "Re-test every evidenced mobile defect and retained foundation against the final implementation."}
+{"file": ".trellis/tasks/archive/2026-08/08-15-mu-playtime-coordination-site/research/ux-time-loom-direction.md", "reason": "Critique final mobile visuals and interactions against the approved Time Loom direction."}

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/data-time-contracts.md", "reason": "Preserve UTC, Temporal, schedule, repository, persistence, and viewer-timezone contracts while restructuring mobile UI."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Keep Vitest, default Playwright, component-browser, live, and production suites explicitly disjoint and CI-enforced."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse the existing interval, timezone, overlap, proposal, dialog, and i18n owners instead of duplicating domain logic during component extraction."}
+{"file": ".trellis/tasks/08-19-mobile-experience-optimization/research/current-mobile-audit.md", "reason": "Current deployed geometry, implementation gaps, preserved foundations, UTC selection defect, and confirmed mobile direction."}
+{"file": ".trellis/tasks/archive/2026-08/08-15-mu-playtime-coordination-site/research/ux-time-loom-direction.md", "reason": "Original Time Loom tokens, one-day mobile layout, four-hour navigation, shuttle, sheet, bilingual, and accessibility direction."}

@@ -60,7 +60,9 @@ npm run test:unit
 npm run test:component
 npm run test:db:static
 npm run test:e2e
+npm run test:browser
 npm run test:e2e:live
+npm run test:e2e:live:mobile
 npm run build
 npm run test:e2e:production
 ```
@@ -71,6 +73,27 @@ public `VITE_*` values and exercises two isolated clients against Supabase.
 `test:e2e:production` serves the already-built final artifact and verifies its
 anonymous-auth and schema handshake before Pages upload. Install Chromium once
 with `npm run test:e2e:install`.
+
+### Supported mobile contract
+
+The deterministic browser suite checks English and Simplified Chinese at
+320×568, 360×800, 375×812, 390×844, and 430×932, plus an 812×375 compact
+landscape profile and a 1280×720 desktop regression profile. It uses a real
+touch/mobile Playwright context for phone contracts and loads production CSS
+through a test-only Vite gallery that is not included in `dist`.
+
+`npm run test:e2e:live:mobile` is an explicit release-only command. It requires
+the four public `VITE_*` values and writes uniquely named test rooms to the
+configured Supabase project. Prefer local or dedicated staging. Do not run it
+against production unless permanent, undeletable test-room records have been
+explicitly accepted. Trace, screenshot, and video capture stay disabled so raw
+invite capabilities are not persisted in artifacts.
+
+Playwright emulation does not prove physical-browser behavior. Before claiming
+platform-complete support, record dated iOS Safari and Android Chrome checks for
+the software keyboard, hardware safe areas, native date/time pickers, Share,
+and a mobile screen reader. Those checks remain unverified until such a device
+record exists.
 
 ## Security and identity limits
 

@@ -29,6 +29,8 @@ Server state uses one canonical key and one snapshot RPC:
 roomKeys.snapshot(roomId); // ["room", roomId, "snapshot"]
 repository.snapshot(roomId): Promise<RoomSnapshot>;
 invalidateRoom(queryClient, roomId): Promise<void>;
+executeRoomMutation({ onlineAtSubmit, operation }): Promise<unknown>;
+projectSelectionRange(snapshot, absoluteRange, viewerTimeZone): SelectionProjection;
 ```
 
 All mutations go through `RoomRepository`. Schedule writes include the current
@@ -71,6 +73,21 @@ projectInstant(instant, zone): Temporal.ZonedDateTime;
   reconciliation after transport warmup so the first event cannot fall into a
   self-hosted/hosted replication startup gap. The event is a freshness signal,
   not domain data.
+- Non-idempotent room mutations use TanStack `networkMode: "always"` so an
+  offline submission fails immediately instead of pausing for automatic replay.
+  The submit path checks current connectivity at the event boundary and again
+  immediately before invoking the repository operation. Draft controls remain
+  editable offline; only the write action is disabled/guarded.
+- A schedule draft that outlives a snapshot render captures its opened
+  `baseVersion` and canonical base interval set. If Realtime/refetch supplies a
+  newer version, retain the user's fields/operation log, disable Save, render
+  current canonical output versus intended rebased output, and bind deliberate
+  review to that exact latest version. Never silently adopt the latest version
+  in an old draft callback.
+- Multi-date board projections keep the absolute selection as authority and
+  clip every member interval to each projected viewer day's
+  `[rangeStart, rangeEnd)` before concatenating days. This prevents a source
+  interval crossing viewer midnight from appearing twice.
 - `muplaytime.preferences.v1` may contain only `lastRoomId`, `lastMemberId`,
   `viewerTimeZone`, and `lastView`. A raw invite capability remains in the join
   hash only until claim, then in React tab memory; it must never enter preferences,
@@ -102,6 +119,9 @@ projectInstant(instant, zone): Temporal.ZonedDateTime;
 | Repeated local proposal time | Return both choices with distinct offsets |
 | Invalid persisted preferences | Remove `muplaytime.preferences.v1` and return `{}` |
 | Offline/realtime disconnect | Keep canonical cached snapshot visible; refetch on recovery |
+| Non-idempotent submit received offline | Fail immediately; never pause or replay it on reconnect |
+| Draft base version differs from current snapshot | Retain draft, show current vs intended output, require version-bound review |
+| Viewer-day composition contains an interval crossing midnight | Clip it into adjacent non-overlapping daily pieces before concatenation |
 
 ### 5. Good / Base / Bad Cases
 
@@ -110,6 +130,12 @@ projectInstant(instant, zone): Temporal.ZonedDateTime;
 - **Base**: `2026-03-08` in `Asia/Dubai` projects normally with no DST annotation.
 - **Bad**: accepting `+04:00` as a schedule zone or deriving one instant silently
   from a repeated wall-clock time loses the user's intended occurrence.
+- **Good**: a range draft opened at schedule v4 remains visible when v5 arrives;
+  Save stays disabled until the member reviews v5 versus the intended v5 result.
+- **Base**: a draft submitted while its base version is still current uses that
+  captured expected version.
+- **Bad**: using `schedule.version` from the latest render inside an older form
+  callback silently overwrites a concurrent interval instead of conflicting.
 
 ### 6. Tests Required
 
@@ -121,6 +147,16 @@ projectInstant(instant, zone): Temporal.ZonedDateTime;
 - Assert malformed snapshot/config/preferences payloads fail closed through Zod.
 - Assert a raw invite passed in an attempted preference patch is stripped and is
   absent from both web-storage mechanisms.
+- Assert an offline mutation does not invoke its repository operation after a
+  later `online` event, and a sheet opened offline can submit normally after a
+  deliberate reconnect without retaining a stale offline closure.
+- For explicit range, quick-paint, interval, restore, and timezone drafts,
+  simulate a newer canonical schedule before submit; assert draft retention,
+  disabled Save, current/intended comparison, and retry with only the reviewed
+  version.
+- Project a member interval across two viewer dates and a 1440-minute selection
+  across three DST civil dates; assert composed intervals are unique,
+  non-overlapping, and clipped to daily projection bounds.
 - Run `npm run test:component` and `npm run test:e2e`; mutations must invalidate
   the room, stale schedule writes must surface conflict UX, and production routing
   must work under `/MuPlaytime/`.
@@ -146,4 +182,14 @@ const snapshot = decodeRoomSnapshot(response.data);
 await invalidateRoom(queryClient, roomId);
 const choices = localProposalChoices(localStart, namedTimeZone);
 // Keep the selected choice and invite token in memory only.
+```
+
+```ts
+// WRONG: silently adopts a newer version for a draft created against old data.
+await replaceDay(rebase(draft, latestIntervals), latestVersion);
+
+// CORRECT: retain intent, require a version-bound comparison, then retry once.
+if (latestVersion !== draft.baseVersion && reviewedVersion !== latestVersion)
+  return showCurrentVsIntended(latestIntervals, draft.operations);
+await replaceDay(rebase(draft, latestIntervals), latestVersion);
 ```
