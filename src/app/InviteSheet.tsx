@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useI18n } from "../i18n/I18nProvider";
-import { useDialogFocus } from "../ui/useDialogFocus";
 
 export function inviteUrl(token: string): string {
   const base = new URL(
@@ -10,50 +9,46 @@ export function inviteUrl(token: string): string {
   return `${base}#/join/${encodeURIComponent(token)}`;
 }
 
-export function InviteSheet({
-  token,
-  onClose,
-}: {
-  token: string | null;
-  onClose: () => void;
-}) {
+export function InviteSheet({ token }: { token: string | null }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
+  const [shareError, setShareError] = useState(false);
   const url = token ? inviteUrl(token) : null;
-  const dialogRef = useDialogFocus<HTMLElement>(true, onClose);
   return (
-    <div className="sheet-backdrop" role="presentation" onMouseDown={onClose}>
-      <section
-        ref={dialogRef}
-        className="sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="invite-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <div className="sheet-heading">
-          <h2 id="invite-title">{t("invite")}</h2>
-          <button
-            className="icon-button"
-            type="button"
-            onClick={onClose}
-            aria-label={t("close")}
-          >
-            ×
-          </button>
-        </div>
-        <p>{t("inviteEphemeral")}</p>
-        {url ? (
-          <>
-            <textarea
-              data-dialog-initial-focus
-              readOnly
-              value={url}
-              rows={3}
-              aria-label={t("copyInvite")}
-            />
+    <div className="invite-sheet-content">
+      {url ? (
+        <>
+          <p>{t("inviteEphemeral")}</p>
+          <textarea
+            data-dialog-initial-focus
+            readOnly
+            value={url}
+            rows={3}
+            aria-label={t("copyInvite")}
+          />
+          <div className="sheet-action-stack">
+            {typeof navigator.share === "function" && (
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={() => {
+                  setShareError(false);
+                  void navigator
+                    .share({ title: t("appName"), url })
+                    .catch((cause: unknown) => {
+                      if (
+                        !(cause instanceof DOMException) ||
+                        cause.name !== "AbortError"
+                      )
+                        setShareError(true);
+                    });
+                }}
+              >
+                {t("shareInvite")}
+              </button>
+            )}
             <button
-              className="button button-primary"
+              className="button button-secondary"
               type="button"
               onClick={() => {
                 void navigator.clipboard
@@ -64,11 +59,18 @@ export function InviteSheet({
             >
               {copied ? t("inviteCopied") : t("copyInvite")}
             </button>
-          </>
-        ) : (
-          <p className="form-error">{t("inviteEphemeral")}</p>
-        )}
-      </section>
+          </div>
+          {shareError && (
+            <p className="form-error" role="alert">
+              {t("shareFailed")}
+            </p>
+          )}
+        </>
+      ) : (
+        <p data-dialog-initial-focus tabIndex={-1}>
+          {t("inviteUnavailable")}
+        </p>
+      )}
     </div>
   );
 }

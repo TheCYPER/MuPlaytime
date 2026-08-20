@@ -1,4 +1,4 @@
-import { devices, expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const REALTIME_TIMEOUT = 10_000;
 
@@ -191,38 +191,5 @@ test.describe("configured local Supabase", () => {
     } finally {
       await contextB.close().catch(() => undefined);
     }
-  });
-});
-
-test.describe("configured mobile", () => {
-  const pixel5 = devices["Pixel 5"];
-  test.use({
-    viewport: pixel5.viewport,
-    userAgent: pixel5.userAgent,
-    deviceScaleFactor: pixel5.deviceScaleFactor,
-    isMobile: pixel5.isMobile,
-    hasTouch: pixel5.hasTouch,
-    locale: "zh-CN",
-    timezoneId: "Asia/Shanghai",
-  });
-
-  test("creates a room at the target mobile viewport", async ({ page }) => {
-    const suffix = uniqueLabel("mobile");
-    await page.goto("./#/", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "创建房间" })).toBeVisible();
-    await page.getByLabel("房间名称").fill(`移动房间 ${suffix}`);
-    await page.getByLabel("你的名字").fill(`移动成员 ${suffix}`);
-    await page.getByLabel("时区").selectOption("Asia/Shanghai");
-    await page.getByRole("button", { name: "创建", exact: true }).click();
-
-    const inviteToken = await captureEphemeralInvite(page, "复制邀请链接");
-    await closeSheet(page);
-    await expect(
-      page.getByRole("heading", { name: "空闲重叠织图" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("navigation", { name: "菜单" }).last(),
-    ).toBeVisible();
-    expect(await inviteIsAbsentFromWebStorage(page, inviteToken)).toBe(true);
   });
 });

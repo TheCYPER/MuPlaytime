@@ -45,15 +45,6 @@ export function App() {
     const listener = () => {
       const nextRoute = parseHash();
       setRoute(nextRoute);
-      setEphemeralInvite((current) => {
-        if (
-          !current ||
-          (nextRoute.kind === "room" && nextRoute.roomId === current.roomId)
-        ) {
-          return current;
-        }
-        return null;
-      });
     };
     window.addEventListener("hashchange", listener);
     return () => window.removeEventListener("hashchange", listener);
@@ -100,7 +91,7 @@ export function App() {
     return (
       <main className="state-page config-state">
         <LanguageSwitch />
-        <p className="eyebrow">PUBLIC CONFIG ONLY</p>
+        <p className="eyebrow">{t("publicConfigOnly")}</p>
         <h1>{t("configTitle")}</h1>
         <p>{t("configBody")}</p>
         <code>
@@ -149,8 +140,10 @@ export function App() {
   if (route.kind === "room")
     return (
       <RoomPage
+        key={route.roomId}
         roomId={route.roomId as RoomId}
         view={route.view}
+        proposalId={route.proposalId}
         repository={repository}
         supabase={supabase}
         viewerTimeZone={viewerTimeZone}

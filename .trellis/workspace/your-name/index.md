@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 1
-- **Last Active**: 2026-08-19
+- **Total Sessions**: 2
+- **Last Active**: 2026-08-20
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~39 | Active |
+| `journal-1.md` | ~74 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 2 | 2026-08-20 | Mobile experience optimization | `3ad8245`, `bc9d7f0`, `bfce119` | `codex/mobile-experience-optimization` |
 | 1 | 2026-08-19 | Ship MuPlaytime coordination site | `a1c34b0f0c377266ab6c879791961e2693a68037` | `agent/archive-muplaytime-task` |
 <!-- @@@/auto:session-history -->
 

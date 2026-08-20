@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 import {
+  isInvalidInviteError,
   isScheduleVersionConflict,
   RoomRepository,
   RoomRpcError,
@@ -28,5 +29,17 @@ describe("RoomRepository errors", () => {
       ),
     ).toBe(true);
     expect(isScheduleVersionConflict(new Error("offline"))).toBe(false);
+  });
+
+  it("distinguishes invalid invites from service failures", () => {
+    expect(
+      isInvalidInviteError(new RoomRpcError("invite_invalid", "22023")),
+    ).toBe(true);
+    expect(
+      isInvalidInviteError(
+        new RoomRpcError("time_zone_invalid: invite_invalid", "22023"),
+      ),
+    ).toBe(false);
+    expect(isInvalidInviteError(new TypeError("Failed to fetch"))).toBe(false);
   });
 });

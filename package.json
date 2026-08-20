@@ -1,7 +1,7 @@
 {
   "name": "mu-playtime",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "engines": {
     "node": ">=22.22.2 <23"
@@ -18,7 +18,11 @@
     "test:unit": "vitest run src/**/*.test.ts",
     "test:component": "vitest run src/**/*.test.tsx",
     "test:e2e": "playwright test",
+    "test:browser": "playwright test --config=playwright.component.config.ts",
+    "test:browser:mobile": "playwright test --config=playwright.component.config.ts --project=mobile-contract --project=mobile-landscape",
+    "test:browser:desktop": "playwright test --config=playwright.component.config.ts --project=desktop-contract",
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
+    "test:e2e:live:mobile": "playwright test --config=playwright.live.mobile.config.ts",
     "test:e2e:production": "playwright test --config=playwright.production.config.ts",
     "test:e2e:install": "playwright install chromium",
     "test:db:static": "node scripts/verify-sql-contracts.mjs"
@@ -32,13 +36,14 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.62.1",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.2",
+    "@types/node": "22.20.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "@types/node": "22.20.1",
     "@vitejs/plugin-react": "6.0.5",
     "eslint": "10.0.1",
     "eslint-plugin-react-hooks": "7.1.1",

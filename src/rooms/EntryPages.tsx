@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { normalizeNamePreview } from "../domain/name";
 import type { RoomClaim } from "../data/schemas";
-import type { RoomRepository } from "../data/repository";
+import { isInvalidInviteError, type RoomRepository } from "../data/repository";
 import { useI18n } from "../i18n/I18nProvider";
 import { LanguageSwitch } from "../ui/LanguageSwitch";
 import { TimezoneSelect } from "../ui/TimezoneSelect";
 import { detectTimeZone, readPreferences } from "../app/preferences";
 import { roomHash } from "../app/router";
 
-function EntryFrame({ children }: { children: React.ReactNode }) {
+export function EntryFrame({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   return (
     <main className="entry-page">
@@ -16,9 +16,11 @@ function EntryFrame({ children }: { children: React.ReactNode }) {
         <LanguageSwitch />
       </div>
       <section className="entry-hero">
-        <p className="eyebrow">CROSS-TIMEZONE CO-OP</p>
+        <p className="eyebrow">{t("crossTimezoneCoop")}</p>
         <h1>
-          MU<span>/</span>PLAYTIME
+          MU<span>/</span>
+          <wbr />
+          PLAYTIME
         </h1>
         <p>{t("tagline")}</p>
         <div className="thread-sample" aria-hidden="true">
@@ -32,7 +34,7 @@ function EntryFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ClaimForm({
+export function ClaimForm({
   mode,
   onSubmit,
 }: {
@@ -49,10 +51,12 @@ function ClaimForm({
   const [timeZone, setTimeZone] = useState(detectTimeZone);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryable, setRetryable] = useState(false);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    setRetryable(false);
     try {
       normalizeNamePreview(displayName);
     } catch {
@@ -62,8 +66,10 @@ function ClaimForm({
     setPending(true);
     try {
       await onSubmit({ displayName, roomName, timeZone });
-    } catch {
-      setError(mode === "join" ? t("invalidInvite") : t("serviceError"));
+    } catch (cause) {
+      const invalidInvite = mode === "join" && isInvalidInviteError(cause);
+      setError(invalidInvite ? t("invalidInvite") : t("serviceError"));
+      setRetryable(!invalidInvite);
     } finally {
       setPending(false);
     }
@@ -109,9 +115,11 @@ function ClaimForm({
           ? mode === "create"
             ? t("creating")
             : t("joining")
-          : mode === "create"
-            ? t("create")
-            : t("join")}
+          : retryable
+            ? t("retry")
+            : mode === "create"
+              ? t("create")
+              : t("join")}
       </button>
     </form>
   );

@@ -42,6 +42,10 @@ export function isScheduleVersionConflict(error: unknown): boolean {
   );
 }
 
+export function isInvalidInviteError(error: unknown): boolean {
+  return error instanceof RoomRpcError && error.message === "invite_invalid";
+}
+
 async function rpcDecoded<T>(
   client: SupabaseClient,
   functionName: string,
