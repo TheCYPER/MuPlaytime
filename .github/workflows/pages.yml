@@ -36,6 +36,7 @@ jobs:
       - run: npm run test:db:static
       - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       - run: npm run test:e2e -- --project=desktop
       - name: Validate production configuration
         if: github.event_name != 'pull_request'

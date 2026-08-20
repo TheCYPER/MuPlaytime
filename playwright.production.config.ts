@@ -14,7 +14,6 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: "line",
   use: {
-    ...devices["Desktop Chrome"],
     baseURL,
     locale: "en-US",
     timezoneId: "Asia/Dubai",
@@ -22,6 +21,10 @@ export default defineConfig({
     screenshot: "off",
     video: "off",
   },
+  projects: [
+    { name: "desktop-production", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-production", use: { ...devices["Pixel 5"] } },
+  ],
   webServer: {
     command: `npm run preview -- --host 127.0.0.1 --port ${port}`,
     url: baseURL,
