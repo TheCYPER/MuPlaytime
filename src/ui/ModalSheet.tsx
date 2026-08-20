@@ -60,8 +60,11 @@ export function ModalSheet({
     const returnFocusTarget = returnFocusRef?.current;
     const previousOverflow = document.body.style.overflow;
     const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth =
+    const viewportScrollbarGap =
       window.innerWidth - document.documentElement.clientWidth;
+    const scrollbarWidth = window.matchMedia?.("(pointer: fine)").matches
+      ? Math.max(0, Math.min(viewportScrollbarGap, 32))
+      : 0;
     appRoot.inert = true;
     appRoot.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "hidden";
